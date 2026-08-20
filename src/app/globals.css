@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --zp-yellow: #FFD100;
+  --zp-navy: #1E293B;
+  --zp-dark: #0F172A;
+  --zp-success: #10B981;
+  --zp-danger: #F43F5E;
+  --zp-warning: #F59E0B;
+  --zp-info: #6366F1;
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --border: #E2E8F0;
+  --muted: #94A3B8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-zp-yellow: var(--zp-yellow);
+  --color-zp-navy: var(--zp-navy);
+  --color-zp-dark: var(--zp-dark);
+  --color-zp-success: var(--zp-success);
+  --color-zp-danger: var(--zp-danger);
+  --color-zp-warning: var(--zp-warning);
+  --color-zp-info: var(--zp-info);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Tahoma, Arial, sans-serif;
+  direction: rtl;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+
+/* Persian numbers */
+.fa-num { font-variant-numeric: tabular-nums; }
