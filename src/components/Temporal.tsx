@@ -37,7 +37,7 @@ export default function Temporal({ data, dateFiltered }: { data: MerchantData; d
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-bold text-zp-navy">تحلیل زمانی و الگوهای فروش</h2>
-      {dateFiltered && <div className="bg-zp-info/5 border border-zp-info/20 rounded-xl p-3 text-xs">روند روزانه و ماهانه از بازه انتخابی بازحساب شده‌اند. هیت‌های ساعت و روز هفته در artifact فعلی فقط برای کل بازه موجود هستند.</div>}
+      {dateFiltered && <div className="bg-zp-info/5 border border-zp-info/20 rounded-xl p-3 text-xs">روند روزانه و ماهانه بر اساس بازه زمانی انتخابی محاسبه شده‌اند. توزیع ساعتی و روزهای هفته فعلاً فقط برای کل بازه دیتاست در دسترس است.</div>}
 
       {/* Peak Window */}
       <div className="bg-zp-yellow/10 border border-zp-yellow/30 rounded-2xl p-4">
@@ -52,7 +52,7 @@ export default function Temporal({ data, dateFiltered }: { data: MerchantData; d
       </div>
 
       {/* Monthly Trend */}
-      <div className="bg-white rounded-2xl border border-border p-4 lg:p-6">
+      <div className="bg-white rounded-2xl border border-border shadow-sm p-4 lg:p-6">
         <h3 className="font-bold text-zp-navy mb-3">روند ماهانه</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -71,7 +71,7 @@ export default function Temporal({ data, dateFiltered }: { data: MerchantData; d
       </div>
 
       {/* Daily Trend (recent) */}
-      <div className="bg-white rounded-2xl border border-border p-4 lg:p-6">
+      <div className="bg-white rounded-2xl border border-border shadow-sm p-4 lg:p-6">
         <h3 className="font-bold text-zp-navy mb-3">روند روزانه (۶۰ روز اخیر)</h3>
         <div className="h-56 overflow-x-auto">
           <ResponsiveContainer width="100%" height="100%">
@@ -87,7 +87,7 @@ export default function Temporal({ data, dateFiltered }: { data: MerchantData; d
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Hourly Distribution */}
-        <div className="bg-white rounded-2xl border border-border p-4">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
           <h3 className="font-bold text-zp-navy mb-3">توزیع ساعتی خرید موفق</h3>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
@@ -102,7 +102,7 @@ export default function Temporal({ data, dateFiltered }: { data: MerchantData; d
         </div>
 
         {/* Day of Week */}
-        <div className="bg-white rounded-2xl border border-border p-4">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
           <h3 className="font-bold text-zp-navy mb-3">توزیع روزهای هفته</h3>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">

@@ -21,6 +21,10 @@ const ERROR_ADVICE: Record<string, string> = {
 
 export default function Gateway({ data, dateFiltered }: { data: MerchantData; dateFiltered: boolean }) {
   const g = data.gatewayHealth;
+  const verifiedCount = g.funnel.sessionStatuses["Verified"] || 0;
+  const paidCount = g.funnel.sessionStatuses["Paid"] || 0;
+  const settledCount = verifiedCount + paidCount;
+  const paidSharePct = settledCount ? (paidCount / settledCount) * 100 : 0;
 
   // Session status pie
   const sessionPie = Object.entries(g.funnel.sessionStatuses)
@@ -56,21 +60,21 @@ export default function Gateway({ data, dateFiltered }: { data: MerchantData; da
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-bold text-zp-navy">سلامت درگاه و عارضه‌یابی</h2>
-      {dateFiltered && <div className="bg-zp-warning/10 border border-zp-warning/30 rounded-xl p-3 text-xs">جزئیات status، PSP و کدهای خطا در artifact فعلی فقط برای کل بازه دیتاست موجود هستند و با فیلتر تاریخ بازحساب نمی‌شوند.</div>}
+      {dateFiltered && <div className="bg-zp-warning/10 border border-zp-warning/30 rounded-xl p-3 text-xs">جزئیات وضعیت جلسات، PSP و کدهای خطا فعلاً فقط برای کل بازه دیتاست محاسبه می‌شوند و با فیلتر تاریخ به‌روزرسانی نمی‌شوند.</div>}
 
       {/* Funnel summary */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-        <div className="bg-white rounded-2xl border border-border p-4 text-center">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-4 text-center">
           <p className="text-xs text-muted">کل تلاش‌های پرداخت</p>
           <p className="text-2xl font-black text-zp-navy fa-num">{formatNumber(g.funnel.totalAttempts)}</p>
         </div>
-        <div className="bg-white rounded-2xl border border-border p-4 text-center">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-4 text-center">
           <p className="text-xs text-muted">جلسات موفق</p>
           <p className="text-2xl font-black text-zp-success fa-num">
             {formatNumber((g.funnel.sessionStatuses["Verified"] || 0) + (g.funnel.sessionStatuses["Paid"] || 0))}
           </p>
         </div>
-        <div className="bg-white rounded-2xl border border-border p-4 text-center">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-4 text-center">
           <p className="text-xs text-muted">جلسات ناموفق</p>
           <p className="text-2xl font-black text-zp-danger fa-num">
             {formatNumber(g.funnel.sessionStatuses["Failed"] || 0)}
@@ -78,9 +82,30 @@ export default function Gateway({ data, dateFiltered }: { data: MerchantData; da
         </div>
       </div>
 
+      {/* Payment Recovery: Paid vs Verified */}
+      {paidCount > 0 && (
+        <div className={`rounded-2xl border p-4 ${paidSharePct >= 3 ? "bg-zp-warning/5 border-zp-warning/30" : "bg-white border-border"}`}>
+          <h3 className="font-bold text-zp-navy mb-1">بازیابی پرداخت‌های تأییدنشده</h3>
+          <p className="text-sm">
+            از <b className="fa-num">{formatNumber(settledCount)}</b> جلسه موفق، <b className="fa-num">{formatNumber(paidCount)}</b> جلسه
+            ({toPersianNum(paidSharePct.toFixed(1))}٪) در وضعیت <b>Paid</b> است: مبلغ از مشتری کسر شده اما هنوز به‌صورت
+            <b> Verified</b> تأیید نهایی نشده است.
+          </p>
+          {paidSharePct >= 3 ? (
+            <div className="mt-3 bg-white/70 rounded-xl p-3 text-sm">
+              💡 <b>اقدام پیشنهادی:</b> این جلسات را در سامانه زرین‌پال به‌صورت دستی verify کنید. تا زمانی که تأیید نشوند، ممکن است
+              مبلغ به‌صورت خودکار به کارت مشتری بازگردد و سفارش او علی‌رغم پرداخت، نافرجام بماند.
+            </div>
+          ) : (
+            <p className="text-xs text-muted mt-2">این سهم در محدوده طبیعی است و نیاز به اقدام فوری ندارد.</p>
+          )}
+          <p className="text-[10px] text-muted mt-2">شمارش session_status=Paid در برابر مجموع Paid+Verified.</p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Session Status */}
-        <div className="bg-white rounded-2xl border border-border p-4">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
           <h3 className="font-bold text-zp-navy mb-3">وضعیت جلسات</h3>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
@@ -97,7 +122,7 @@ export default function Gateway({ data, dateFiltered }: { data: MerchantData; da
         </div>
 
         {/* Try Status */}
-        <div className="bg-white rounded-2xl border border-border p-4">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
           <h3 className="font-bold text-zp-navy mb-3">وضعیت تلاش‌ها</h3>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
@@ -116,7 +141,7 @@ export default function Gateway({ data, dateFiltered }: { data: MerchantData; da
 
       {/* Response Codes */}
       {codeChart.length > 0 && (
-        <div className="bg-white rounded-2xl border border-border p-4 lg:p-6">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-4 lg:p-6">
           <h3 className="font-bold text-zp-navy mb-3">پرتکرارترین کدهای خطا</h3>
           <div className="h-56 overflow-x-auto">
             <ResponsiveContainer width="100%" height="100%">
@@ -142,7 +167,7 @@ export default function Gateway({ data, dateFiltered }: { data: MerchantData; da
 
       {/* PSP Distribution */}
       {pspPie.length > 0 && (
-        <div className="bg-white rounded-2xl border border-border p-4">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
           <h3 className="font-bold text-zp-navy mb-3">توزیع PSP</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">

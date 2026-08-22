@@ -9,8 +9,10 @@ import Customers from "@/components/Customers";
 import Benchmark from "@/components/Benchmark";
 import Gateway from "@/components/Gateway";
 import Copilot from "@/components/Copilot";
+import Alerts from "@/components/Alerts";
 import MethodologyPanel from "@/components/MethodologyPanel";
 import { filterMerchantData } from "@/lib/analytics";
+import { downloadMerchantReportCSV } from "@/lib/export";
 
 const TABS = [
   { id: "overview", label: "پیشخوان" },
@@ -18,6 +20,7 @@ const TABS = [
   { id: "customers", label: "مشتریان" },
   { id: "benchmark", label: "مقایسه صنفی" },
   { id: "gateway", label: "سلامت درگاه" },
+  { id: "alerts", label: "هشدارها" },
   { id: "copilot", label: "دستیار هوشمند" },
 ] as const;
 
@@ -53,7 +56,7 @@ export default function Home() {
         setLoading(false);
       })
       .catch(() => {
-        setError("خطا در بارگذاری داده‌ها. لطفاً ابتدا اسکریپت آماده‌سازی را اجرا کنید.");
+        setError("بارگذاری داده‌ها با خطا مواجه شد. لطفاً ابتدا اسکریپت آماده‌سازی داده را اجرا کنید.");
         setLoading(false);
       });
   }, []);
@@ -69,18 +72,18 @@ export default function Home() {
         setLoading(false);
       })
       .catch(() => {
-        setError("خطا در بارگذاری داده پذیرنده.");
+        setError("بارگذاری اطلاعات این پذیرنده با خطا مواجه شد.");
         setLoading(false);
       });
   }, [selectedMerchant]);
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <div className="bg-white rounded-2xl border border-border shadow-lg p-8 max-w-md text-center">
           <div className="text-4xl mb-4">⚠️</div>
-          <p className="text-lg font-semibold text-zp-navy mb-2">خطا</p>
-          <p className="text-muted">{error}</p>
+          <p className="text-lg font-bold text-zp-navy mb-2">مشکلی پیش آمد</p>
+          <p className="text-sm text-muted leading-relaxed">{error}</p>
         </div>
       </div>
     );
@@ -108,23 +111,24 @@ export default function Home() {
       {/* Main Content */}
       <main className="flex-1 lg:mr-64 pb-20 lg:pb-0">
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-border px-4 lg:px-8 py-3 flex items-center justify-between">
+        <header className="sticky top-0 z-30 bg-white/85 backdrop-blur border-b border-border px-4 lg:px-8 py-3 flex items-center justify-between shadow-sm">
           <div>
-            <h1 className="text-lg lg:text-xl font-bold text-zp-navy">
+            <h1 className="text-lg lg:text-xl font-bold text-zp-navy tracking-tight">
               داشبورد تحلیلی زرین‌پال
             </h1>
             {filteredData && (
               <p className="text-sm text-muted">
-                {filteredData.categoryTitle} · {filteredData.id}
+                {filteredData.categoryTitle} · <span className="fa-num">{filteredData.id}</span>
               </p>
             )}
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             {/* Mobile merchant selector */}
             <select
-              className="lg:hidden bg-white border border-border rounded-lg px-2 py-1.5 text-sm"
+              className="lg:hidden bg-white border border-border rounded-lg px-2 py-1.5 text-sm hover:border-zp-navy/30 transition"
               value={selectedMerchant}
               onChange={(e) => setSelectedMerchant(e.target.value)}
+              aria-label="انتخاب پذیرنده"
             >
               {merchants.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -133,7 +137,7 @@ export default function Home() {
               ))}
             </select>
             {metadata && (
-              <div className="flex items-center gap-1 text-xs text-muted" aria-label="بازه زمانی تحلیل">
+              <div className="flex items-center gap-1.5 text-xs text-muted" aria-label="بازه زمانی تحلیل">
                 <input
                   type="date"
                   min={metadata.dateRange.min}
@@ -144,7 +148,7 @@ export default function Home() {
                     setStartDate(value);
                     if (endDate && value > endDate) setEndDate(value);
                   }}
-                  className="rounded-lg border border-border bg-white px-2 py-1.5"
+                  className="rounded-lg border border-border bg-white px-2 py-1.5 hover:border-zp-navy/30 transition"
                   aria-label="شروع بازه"
                 />
                 <span>تا</span>
@@ -158,14 +162,22 @@ export default function Home() {
                     setEndDate(value);
                     if (startDate && value < startDate) setStartDate(value);
                   }}
-                  className="rounded-lg border border-border bg-white px-2 py-1.5"
+                  className="rounded-lg border border-border bg-white px-2 py-1.5 hover:border-zp-navy/30 transition"
                   aria-label="پایان بازه"
                 />
               </div>
             )}
+            {filteredData && (
+              <button
+                onClick={() => downloadMerchantReportCSV(filteredData, metadata)}
+                className="text-xs font-medium bg-white border border-border text-zp-navy px-3 py-1.5 rounded-lg hover:border-zp-yellow hover:shadow-sm transition"
+              >
+                دانلود گزارش CSV
+              </button>
+            )}
             <button
               onClick={() => setShowMethodology(true)}
-              className="text-xs bg-zp-yellow/20 text-zp-navy px-3 py-1.5 rounded-lg hover:bg-zp-yellow/40 transition"
+              className="text-xs font-medium bg-zp-yellow/20 text-zp-navy px-3 py-1.5 rounded-lg hover:bg-zp-yellow/40 transition"
             >
               روش محاسبه
             </button>
@@ -177,7 +189,7 @@ export default function Home() {
           {loading ? (
             <div className="flex items-center justify-center py-32">
               <div className="animate-spin w-10 h-10 border-4 border-zp-yellow border-t-transparent rounded-full" />
-              <span className="mr-3 text-muted">در حال بارگذاری...</span>
+              <span className="mr-3 text-muted">در حال بارگذاری اطلاعات…</span>
             </div>
           ) : filteredData && hasDateData ? (
             <>
@@ -192,13 +204,16 @@ export default function Home() {
                 />
               )}
               {tab === "gateway" && <Gateway data={filteredData} dateFiltered={dateFiltered} />}
+              {tab === "alerts" && <Alerts data={filteredData} dateFiltered={dateFiltered} />}
               {tab === "copilot" && (
                 <Copilot data={filteredData} benchmarks={benchmarks} dateFiltered={dateFiltered} />
               )}
             </>
           ) : (
-            <div className="text-center py-32 text-muted">
-              برای این پذیرنده در بازه انتخابی تراکنشی ثبت نشده است. بازه زمانی را تغییر دهید.
+            <div className="flex flex-col items-center justify-center text-center py-32 gap-2">
+              <span className="text-4xl mb-1">🗓️</span>
+              <p className="text-zp-navy font-medium">در بازه زمانی انتخابی، تراکنشی برای این پذیرنده ثبت نشده است.</p>
+              <p className="text-muted text-sm">بازه زمانی را در نوار بالا تغییر دهید تا داده‌ها نمایش داده شود.</p>
             </div>
           )}
         </div>

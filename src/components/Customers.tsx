@@ -17,9 +17,10 @@ export default function Customers({ data, dateFiltered }: { data: MerchantData; 
 
   if (!c.totalIdentifiable) {
     return (
-      <div className="text-center py-20">
-        <p className="text-4xl mb-3">👥</p>
-        <p className="text-muted">داده مشتری شناسایی‌شده (payer_card_key) برای این پذیرنده وجود ندارد.</p>
+      <div className="flex flex-col items-center text-center py-20 gap-2">
+        <p className="text-4xl mb-1">👥</p>
+        <p className="text-zp-navy font-medium">داده مشتری شناسایی‌شده برای این پذیرنده موجود نیست.</p>
+        <p className="text-muted text-sm max-w-sm">شناسه یکتای کارت خریدار (payer_card_key) در تراکنش‌های این پذیرنده ثبت نشده، بنابراین تحلیل رفتار مشتری قابل محاسبه نیست.</p>
       </div>
     );
   }
@@ -36,28 +37,28 @@ export default function Customers({ data, dateFiltered }: { data: MerchantData; 
     <div className="space-y-6">
       <h2 className="text-lg font-bold text-zp-navy">تحلیل رفتار مشتریان</h2>
 
-      {dateFiltered && <div className="bg-zp-warning/10 border border-zp-warning/30 rounded-xl p-3 text-xs">شاخص‌های مشتری، RFM و نرخ خرید مجدد با artifact کل بازه دیتاست محاسبه شده‌اند؛ فیلتر تاریخ فعلی فقط KPI و تحلیل زمانی را بازحساب می‌کند.</div>}
+      {dateFiltered && <div className="bg-zp-warning/10 border border-zp-warning/30 rounded-xl p-3 text-xs">شاخص‌های مشتری، بخش‌بندی RFM و نرخ خرید مجدد بر اساس کل بازه دیتاست محاسبه شده‌اند؛ فیلتر تاریخ فعلی فقط روی KPIها و تحلیل زمانی اثر می‌گذارد.</div>}
 
       {/* Key Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-white rounded-2xl border border-border p-4">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
           <p className="text-xs text-muted">مشتریان شناسایی‌شده</p>
           <p className="text-2xl font-black text-zp-navy fa-num">{formatNumber(c.totalIdentifiable)}</p>
           <p className="text-[10px] text-muted">بر اساس payer_card_key یکتا</p>
         </div>
-        <div className="bg-white rounded-2xl border border-border p-4">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
           <p className="text-xs text-muted">مشتریان تکراری</p>
           <p className="text-2xl font-black text-zp-info fa-num">{formatNumber(c.repeatCustomers)}</p>
           <p className="text-[10px] text-muted">بیش از یک خرید موفق</p>
         </div>
-        <div className="bg-white rounded-2xl border border-border p-4">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
           <p className="text-xs text-muted">نرخ خرید مجدد</p>
           <p className={`text-2xl font-black fa-num ${c.repeatRate > 20 ? "text-zp-success" : "text-zp-warning"}`}>
             {formatPercent(c.repeatRate)}
           </p>
           <p className="text-[10px] text-muted">تکراری ÷ کل شناسایی‌شده</p>
         </div>
-        <div className="bg-white rounded-2xl border border-border p-4">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
           <p className="text-xs text-muted">مشتریان در معرض ریزش</p>
           <p className="text-2xl font-black text-zp-danger fa-num">
             {formatNumber(c.rfmSegments.atRisk + c.rfmSegments.lost)}
@@ -69,7 +70,7 @@ export default function Customers({ data, dateFiltered }: { data: MerchantData; 
       {/* RFM Chart + Table */}
       {c.hasEnoughForRFM ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-white rounded-2xl border border-border p-4">
+          <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
             <h3 className="font-bold text-zp-navy mb-3">بخش‌بندی RFM مشتریان</h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -94,7 +95,7 @@ export default function Customers({ data, dateFiltered }: { data: MerchantData; 
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-border p-4">
+          <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
             <h3 className="font-bold text-zp-navy mb-3">جزئیات بخش‌ها</h3>
             <div className="space-y-2">
               {Object.entries(SEGMENT_LABELS).map(([key, seg]) => {

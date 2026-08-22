@@ -112,6 +112,17 @@ export interface BenchmarkData {
   successRate?: { p50: number; avg: number };
 }
 
+export type AlertSeverity = "critical" | "warning" | "opportunity" | "info";
+
+export interface AlertItem {
+  id: string;
+  severity: AlertSeverity;
+  title: string;
+  text: string;
+  evidence: string;
+  action: string;
+}
+
 export interface Metadata {
   totalRows: number;
   skippedRows: number;

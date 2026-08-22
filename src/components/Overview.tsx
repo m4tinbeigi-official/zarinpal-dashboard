@@ -7,7 +7,7 @@ function KPICard({ title, value, sub, color, evidence }: {
   title: string; value: string; sub?: string; color: string; evidence: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-border p-4 lg:p-5 hover:shadow-md transition group relative">
+    <div className="bg-white rounded-2xl border border-border shadow-sm p-4 lg:p-5 hover:shadow-md transition group relative">
       <p className="text-xs text-muted mb-1">{title}</p>
       <p className={`text-xl lg:text-2xl font-black fa-num ${color}`}>{value}</p>
       {sub && <p className="text-xs mt-1 fa-num text-muted">{sub}</p>}
@@ -32,7 +32,7 @@ export default function Overview({ data, dateFiltered }: { data: MerchantData; m
 
   return (
     <div className="space-y-6">
-      {dateFiltered && <div className="bg-zp-info/5 border border-zp-info/20 rounded-xl p-3 text-xs">KPIهای فروش و نمودارهای این صفحه از بازه انتخابی بازحساب شده‌اند. شاخص‌های مشتری در خلاصه مدیریتی، تجمیع کل بازه دیتاست هستند.</div>}
+      {dateFiltered && <div className="bg-zp-info/5 border border-zp-info/20 rounded-xl p-3 text-xs">شاخص‌های فروش و نمودارهای این صفحه بر اساس بازه زمانی انتخابی محاسبه شده‌اند. شاخص‌های مشتری در خلاصه مدیریتی، همچنان بر پایه کل بازه دیتاست هستند.</div>}
       {/* KPI Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4">
         <KPICard
@@ -75,7 +75,7 @@ export default function Overview({ data, dateFiltered }: { data: MerchantData; m
       </div>
 
       {/* Monthly Trend */}
-      <div className="bg-white rounded-2xl border border-border p-4 lg:p-6">
+      <div className="bg-white rounded-2xl border border-border shadow-sm p-4 lg:p-6">
         <h3 className="font-bold text-zp-navy mb-4">روند ماهانه فروش موفق</h3>
         <div className="h-64 lg:h-80">
           <ResponsiveContainer width="100%" height="100%">

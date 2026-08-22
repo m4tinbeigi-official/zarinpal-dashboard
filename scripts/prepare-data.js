@@ -155,7 +155,10 @@ async function run() {
     }
 
     // ── response codes ──
-    if (switchResponseCode) {
+    // Only count codes on failed attempts (try_status not Verified/Paid) — a code
+    // that also fires on successful attempts is not an "error" driver and must not
+    // be surfaced as one.
+    if (switchResponseCode && !isSuccess(tryStatus)) {
       if (!responseCodesByMerchant[merchantKey])
         responseCodesByMerchant[merchantKey] = {};
       responseCodesByMerchant[merchantKey][switchResponseCode] =
@@ -210,9 +213,12 @@ async function run() {
         hourByMerchant[merchantKey][hour].count++;
       }
 
-      // day of week
-      const dt = new Date(createdAt);
-      const dow = dt.getDay(); // 0=Sun
+      // day of week — parsed from the same raw date string used for `hour`
+      // (no local-timezone conversion), so results are reproducible across machines.
+      const y = parseInt(createdAt.slice(0, 4), 10);
+      const mo = parseInt(createdAt.slice(5, 7), 10) - 1;
+      const da = parseInt(createdAt.slice(8, 10), 10);
+      const dow = new Date(Date.UTC(y, mo, da)).getUTCDay(); // 0=Sun
       if (!dowByMerchant[merchantKey]) dowByMerchant[merchantKey] = {};
       if (!dowByMerchant[merchantKey][dow]) {
         dowByMerchant[merchantKey][dow] = { gmv: 0, count: 0 };

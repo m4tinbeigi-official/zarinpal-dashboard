@@ -99,15 +99,75 @@ export default function Copilot({
   const answers = generateAnswers(data, benchmarks);
   const [selected, setSelected] = useState<number | null>(null);
 
+  const [freeQuestion, setFreeQuestion] = useState("");
+  const [freeAnswer, setFreeAnswer] = useState<string | null>(null);
+  const [freeError, setFreeError] = useState<string | null>(null);
+  const [freeLoading, setFreeLoading] = useState(false);
+
+  async function askFreeQuestion() {
+    const q = freeQuestion.trim();
+    if (!q) return;
+    setFreeLoading(true);
+    setFreeError(null);
+    setFreeAnswer(null);
+    try {
+      const res = await fetch("/api/copilot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ merchantId: data.id, question: q }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setFreeError(json.error || "خطای نامشخص");
+      } else {
+        setFreeAnswer(json.answer);
+      }
+    } catch {
+      setFreeError("خطا در ارتباط با سرور.");
+    } finally {
+      setFreeLoading(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-bold text-zp-navy">دستیار تحلیلی هوشمند</h2>
 
-      <div className="bg-zp-info/5 border border-zp-info/20 rounded-xl p-3 text-sm">
-        <b>توجه:</b> این دستیار بر پایه محاسبات قطعی از داده‌های واقعی پاسخ می‌دهد و از مدل زبانی زنده استفاده نمی‌کند.
-        هر پاسخ با شواهد و اقدام پیشنهادی همراه است.
+      {/* Free-text LLM-powered question box */}
+      <div className="bg-white rounded-2xl border-2 border-zp-yellow shadow-sm p-4 space-y-3">
+        <p className="text-sm font-bold text-zp-navy">هر سوالی درباره کسب‌وکارت بپرس؛ پاسخ را مدل زبانی بر اساس داده واقعی همین پذیرنده تولید می‌کند.</p>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={freeQuestion}
+            onChange={(e) => setFreeQuestion(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && !freeLoading && askFreeQuestion()}
+            placeholder="مثلاً: چرا فروش هفته گذشته کم شد؟"
+            maxLength={500}
+            aria-label="پرسش خود را بنویسید"
+            className="flex-1 border border-border rounded-xl px-3 py-2 text-sm focus:border-zp-yellow transition"
+          />
+          <button
+            onClick={askFreeQuestion}
+            disabled={freeLoading || !freeQuestion.trim()}
+            className="bg-zp-yellow text-zp-navy font-bold rounded-xl px-4 py-2 text-sm hover:brightness-95 transition disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {freeLoading ? "در حال پردازش…" : "پرسیدن"}
+          </button>
+        </div>
+        {freeError && (
+          <div className="bg-zp-danger/10 border border-zp-danger/30 rounded-xl p-3 text-xs text-zp-danger">{freeError}</div>
+        )}
+        {freeAnswer && (
+          <div className="bg-gray-50 rounded-xl p-3 text-sm whitespace-pre-wrap leading-relaxed">{freeAnswer}</div>
+        )}
       </div>
-      {dateFiltered && <div className="bg-zp-warning/10 border border-zp-warning/30 rounded-xl p-3 text-xs">پرسش‌های فروش، موفقیت و روند از بازه فعال استفاده می‌کنند. پرسش‌های مشتری، benchmark و خطاها از تجمیع کل بازه استفاده می‌کنند و شواهد پاسخ این موضوع را مشخص می‌کند.</div>}
+
+      <div className="bg-zp-info/5 border border-zp-info/20 rounded-xl p-3 text-sm">
+        <b>توجه:</b> کارت‌های زیر بر پایه محاسبات قطعی و از‌پیش‌تعیین‌شده هستند و همیشه سریع و بدون نیاز به مدل زبانی در دسترس‌اند.
+        هر پاسخ همراه با شواهد و اقدام پیشنهادی ارائه می‌شود. برای پرسش آزاد از کادر بالا استفاده کنید.
+      </div>
+      {dateFiltered && <div className="bg-zp-warning/10 border border-zp-warning/30 rounded-xl p-3 text-xs">پرسش‌های مربوط به فروش، نرخ موفقیت و روند از بازه زمانی فعال استفاده می‌کنند. پرسش‌های مشتری، مقایسه صنفی و خطاهای درگاه از کل بازه دیتاست محاسبه می‌شوند؛ این موضوع در بخش «شواهد» هر پاسخ مشخص شده است.</div>}
 
       {/* Preset Questions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
@@ -115,7 +175,7 @@ export default function Copilot({
           <button
             key={i}
             onClick={() => setSelected(selected === i ? null : i)}
-            className={`text-right bg-white rounded-2xl border p-4 transition hover:shadow-md ${
+            className={`text-right bg-white rounded-2xl border p-4 shadow-sm transition hover:shadow-md hover:-translate-y-0.5 ${
               selected === i ? "border-zp-yellow shadow-md" : "border-border"
             }`}
           >
@@ -129,7 +189,7 @@ export default function Copilot({
 
       {/* Answer Panel */}
       {selected !== null && (
-        <div className="bg-white rounded-2xl border-2 border-zp-yellow p-5 space-y-4 animate-in">
+        <div className="bg-white rounded-2xl border-2 border-zp-yellow shadow-md p-5 space-y-4 animate-in">
           <div>
             <p className="text-xs text-muted mb-1">پرسش</p>
             <p className="font-bold text-zp-navy">{answers[selected].q}</p>

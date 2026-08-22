@@ -12,7 +12,7 @@ function Gauge({ label, value, avg, p50, unit }: {
   const above = ratio >= 0;
 
   return (
-    <div className="bg-white rounded-2xl border border-border p-4">
+    <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
       <p className="text-xs text-muted mb-2">{label}</p>
       <p className="text-xl font-black text-zp-navy fa-num">{fmt(value)}</p>
       <div className="mt-2 space-y-1 text-xs">
@@ -40,9 +40,10 @@ export default function Benchmark({
 
   if (!catBench) {
     return (
-      <div className="text-center py-20">
-        <p className="text-4xl mb-3">🏆</p>
-        <p className="text-muted">دسته‌بندی صنفی برای این پذیرنده یافت نشد.</p>
+      <div className="flex flex-col items-center text-center py-20 gap-2">
+        <p className="text-4xl mb-1">🏆</p>
+        <p className="text-zp-navy font-medium">مقایسه صنفی برای این پذیرنده در دسترس نیست.</p>
+        <p className="text-muted text-sm">دسته صنفی این پذیرنده در داده بنچ‌مارک شناسایی نشد.</p>
       </div>
     );
   }
@@ -65,22 +66,32 @@ export default function Benchmark({
 
   const k = data.kpi;
 
-  // Calculate percentile position for GMV
+  // Calculate percentile position for GMV.
+  // Quintile boundaries can collide in small categories (min 3 merchants), which
+  // would divide by zero — fall back to the band's flat value when that happens.
   const gmvBench = catBench.gmv!;
   let percentileRank = 50;
   if (k.totalGMV >= gmvBench.p90) percentileRank = 95;
-  else if (k.totalGMV >= gmvBench.p75) percentileRank = 75 + 15 * (k.totalGMV - gmvBench.p75) / (gmvBench.p90 - gmvBench.p75);
-  else if (k.totalGMV >= gmvBench.p50) percentileRank = 50 + 25 * (k.totalGMV - gmvBench.p50) / (gmvBench.p75 - gmvBench.p50);
-  else if (k.totalGMV >= gmvBench.p25) percentileRank = 25 + 25 * (k.totalGMV - gmvBench.p25) / (gmvBench.p50 - gmvBench.p25);
-  else percentileRank = 25 * k.totalGMV / (gmvBench.p25 || 1);
+  else if (k.totalGMV >= gmvBench.p75) {
+    const span = gmvBench.p90 - gmvBench.p75;
+    percentileRank = span > 0 ? 75 + 15 * (k.totalGMV - gmvBench.p75) / span : 75;
+  } else if (k.totalGMV >= gmvBench.p50) {
+    const span = gmvBench.p75 - gmvBench.p50;
+    percentileRank = span > 0 ? 50 + 25 * (k.totalGMV - gmvBench.p50) / span : 50;
+  } else if (k.totalGMV >= gmvBench.p25) {
+    const span = gmvBench.p50 - gmvBench.p25;
+    percentileRank = span > 0 ? 25 + 25 * (k.totalGMV - gmvBench.p25) / span : 25;
+  } else {
+    percentileRank = gmvBench.p25 > 0 ? 25 * k.totalGMV / gmvBench.p25 : 0;
+  }
 
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-bold text-zp-navy">مقایسه صنفی – {catBench.title}</h2>
-      {dateFiltered && <div className="bg-zp-warning/10 border border-zp-warning/30 rounded-xl p-3 text-xs">مقادیر پذیرنده با بازه انتخابی بازحساب شده‌اند، اما benchmark صنفی به دلیل نبود artifact ماهانه صنف بر کل بازه دیتاست است.</div>}
+      {dateFiltered && <div className="bg-zp-warning/10 border border-zp-warning/30 rounded-xl p-3 text-xs">مقادیر این پذیرنده بر اساس بازه زمانی انتخابی محاسبه شده‌اند؛ اما بنچ‌مارک صنفی همچنان بر پایه کل بازه دیتاست است، چون داده ماهانه صنف در دسترس نیست.</div>}
 
       {/* Percentile Card */}
-      <div className="bg-white rounded-2xl border border-border p-6">
+      <div className="bg-white rounded-2xl border border-border shadow-sm p-6">
         <div className="flex flex-col lg:flex-row items-center gap-6">
           <div className="w-32 h-32 rounded-full border-8 border-zp-yellow flex items-center justify-center">
             <div className="text-center">
